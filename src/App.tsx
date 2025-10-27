@@ -1,39 +1,33 @@
 import React from 'react';
-import { HashRouter as Router, Routes, Route, Link } from 'react-router-dom';
 import './App.css';
 import Home from './components/Home';
-import DigitalPictures from './components/DigitalPictures';
-import Portrait from './components/Portrait';
-import Projects from './components/Projects';
 
 function App() {
+  const scrollToSection = (sectionId: string) => {
+    const element = document.getElementById(sectionId);
+    if (element) {
+      element.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
+
   return (
-    <Router>
-      <div className="App">
-        <header className="header">
-          <div className="container">
-            <h1 className="model-name">Amy An Cartwright</h1>
-            <nav className="navigation">
-              <Link to="/" className="nav-link">Home</Link>
-              <Link to="/digitals" className="nav-link">Digitals</Link>
-              <Link to="/portrait" className="nav-link">Portraits</Link>
-              <Link to="/projects" className="nav-link">Projects</Link>
-              <Link to="/contact" className="nav-link">Contact</Link>
-            </nav>
-          </div>
-        </header>
-        
-        <main className="main-content">
-          <Routes>
-            <Route path="/" element={<Home />} />
-            <Route path="/digitals" element={<DigitalPictures />} />
-            <Route path="/portrait" element={<Portrait />} />
-            <Route path="/projects" element={<Projects />} />
-            <Route path="/contact" element={<div className="contact-placeholder">Contact page coming soon!</div>} />
-          </Routes>
-        </main>
-      </div>
-    </Router>
+    <div className="App">
+      <header className="header">
+        <div className="container">
+          <nav className="navigation">
+            <a onClick={() => scrollToSection('home')} className="nav-link">Home</a>
+            <a onClick={() => scrollToSection('portfolio')} className="nav-link">Portfolio</a>
+            <a onClick={() => scrollToSection('digitals')} className="nav-link">Digitals</a>
+            <a onClick={() => scrollToSection('work')} className="nav-link">Work</a>
+            <a onClick={() => scrollToSection('contact')} className="nav-link">Contact</a>
+          </nav>
+        </div>
+      </header>
+      
+      <main className="main-content">
+        <Home />
+      </main>
+    </div>
   );
 }
 
