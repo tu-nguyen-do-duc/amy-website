@@ -55,23 +55,23 @@ const Home: React.FC = () => {
               <div className="measurements">
                 <div className="measurement-item">
                   <span className="label">Height</span>
-                  <span className="value">5'9" / 175 cm</span>
+                  <span className="value">158 cm</span>
                 </div>
                 <div className="measurement-item">
                   <span className="label">Bust</span>
-                  <span className="value">32" / 81 cm</span>
+                  <span className="value">79 cm</span>
                 </div>
                 <div className="measurement-item">
                   <span className="label">Waist</span>
-                  <span className="value">24" / 61 cm</span>
+                  <span className="value">60 cm</span>
                 </div>
                 <div className="measurement-item">
                   <span className="label">Hips</span>
-                  <span className="value">34" / 86 cm</span>
+                  <span className="value">103 cm</span>
                 </div>
                 <div className="measurement-item">
                   <span className="label">Dress Size</span>
-                  <span className="value">US 2 / EU 34</span>
+                  <span className="value">XXS</span>
                 </div>
                 <div className="measurement-item">
                   <span className="label">Shoe Size</span>
