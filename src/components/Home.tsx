@@ -1,7 +1,120 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import emailjs from '@emailjs/browser';
+// @ts-ignore: allow side-effect CSS import without type declarations
 import './Home.css';
+import { useExplore } from '../ExploreContext';
+
+interface Album {
+  id: number;
+  title: string;
+  description: string;
+  folderName: string;
+  images: string[];
+  photographer?: string;
+  date?: string;
+}
 
 const Home: React.FC = () => {
+  const navigate = useNavigate();
+  const { isExploreClicked, setIsExploreClicked } = useExplore();
+  const [albums, setAlbums] = useState<Album[]>([]);
+  const [randomImageIndices, setRandomImageIndices] = useState<number[]>([]);
+  const [formData, setFormData] = useState({
+    name: '',
+    email: '',
+    subject: '',
+    message: '',
+  });
+  const [formStatus, setFormStatus] = useState<'idle' | 'sending' | 'success' | 'error'>('idle');
+
+  useEffect(() => {
+    // Initialize EmailJS
+    const publicKey = process.env.REACT_APP_EMAILJS_PUBLIC_KEY;
+    if (publicKey) {
+      emailjs.init(publicKey);
+    }
+  }, []);
+
+  useEffect(() => {
+    // Load manifest
+    const basePath = process.env.PUBLIC_URL || '/amy-website';
+    fetch(`${basePath}/images-manifest.json`)
+      .then(res => res.json())
+      .then(data => setAlbums(data.albums))
+      .catch(err => console.error('Failed to load manifest:', err));
+  }, []);
+
+  useEffect(() => {
+    // Generate random image indices when albums are loaded
+    if (albums.length > 0) {
+      const indices = [];
+      // Generate indices for hero image and 4 digital photos
+      for (let i = 0; i < 5; i++) {
+        const randomIndex = Math.floor(Math.random() * albums[i % albums.length].images.length);
+        indices.push(randomIndex);
+      }
+      setRandomImageIndices(indices);
+    }
+  }, [albums]);
+
+  const getPhotoPath = (folderName: string, fileName: string): string => {
+    const basePath = process.env.PUBLIC_URL || '/amy-website';
+    return `${basePath}/media/${folderName}/${fileName}`;
+  };
+
+  const handleExplore = () => {
+    setIsExploreClicked(true);
+    setTimeout(() => {
+      document.getElementById('digitals')?.scrollIntoView({ behavior: 'smooth' });
+    }, 0);
+  };
+
+  const handleFormChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
+
+  const getRandomImage = (albumIndex: number) => {
+    if (albums.length === 0 || randomImageIndices.length === 0) return '';
+    const album = albums[albumIndex % albums.length];
+    const randomImageIndex = randomImageIndices[albumIndex] || 0;
+    return getPhotoPath(album.folderName, album.images[randomImageIndex]);
+  };
+
+  const handleFormSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setFormStatus('sending');
+
+    try {
+      const serviceId = process.env.REACT_APP_EMAILJS_SERVICE_ID;
+      const templateId = process.env.REACT_APP_EMAILJS_TEMPLATE_ID;
+
+      if (!serviceId || !templateId) {
+        throw new Error('EmailJS credentials not configured');
+      }
+
+      await emailjs.send(serviceId, templateId, {
+        to_email: 'nguyendoductu@gmail.com',
+        from_name: formData.name,
+        from_email: formData.email,
+        subject: formData.subject,
+        message: formData.message,
+      });
+
+      setFormStatus('success');
+      setFormData({ name: '', email: '', subject: '', message: '' });
+      setTimeout(() => setFormStatus('idle'), 5000);
+    } catch (error) {
+      console.error('Failed to send email:', error);
+      setFormStatus('error');
+      setTimeout(() => setFormStatus('idle'), 5000);
+    }
+  };
+
   return (
     <div className="home">
       {/* Hero Section */}
@@ -11,38 +124,21 @@ const Home: React.FC = () => {
           <p className="hero-subtitle">MODEL PORTFOLIO</p>
           <button 
             className="explore-button" 
-            onClick={() => document.getElementById('portfolio')?.scrollIntoView({ behavior: 'smooth' })}
+            onClick={handleExplore}
           >
             EXPLORE
           </button>
         </div>
         <div className="hero-image-placeholder">
-          <span className="image-placeholder-text">Hero Image</span>
+          <img src={`${process.env.PUBLIC_URL || '/amy-website'}/media/NEY 2/DSCF4556.jpeg`} alt="Hero" className="hero-image" />
         </div>
       </section>
 
-      {/* Portfolio Section */}
-      <section id="portfolio" className="portfolio-section">
-        <div className="container">
-          <div className="section-header">
-            <h2>PORTFOLIO</h2>
-            <p>A curated selection of editorial and commercial work</p>
-          </div>
-          
-          <div className="portfolio-grid">
-            {[...Array(12)].map((_, index) => (
-              <div key={index} className="portfolio-item">
-                <div className="portfolio-placeholder">
-                  <span>Portrait {index + 1}</span>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
+
 
       {/* Digitals Section */}
-      <section id="digitals" className="digitals-section">
+      {isExploreClicked ? (
+        <section id="digitals" className="digitals-section">
         <div className="container">
           <div className="section-header">
             <h2>DIGITALS</h2>
@@ -89,91 +185,130 @@ const Home: React.FC = () => {
             </div>
             
             <div className="digitals-photos">
-              {[...Array(4)].map((_, index) => (
+              {albums.length > 0 && [...Array(4)].map((_, index) => (
                 <div key={index} className="digital-photo-item">
-                  <div className="photo-placeholder">
-                    <span>Digital {index + 1}</span>
-                  </div>
+                  <img src={getRandomImage(index + 1)} alt={`Digital ${index + 1}`} className="digital-image" />
                 </div>
               ))}
             </div>
           </div>
         </div>
-      </section>
+        </section>
+      ) : null}
 
       {/* Work/Projects Section */}
-      <section id="work" className="work-section">
+      {isExploreClicked ? (
+        <section id="work" className="work-section">
         <div className="container">
           <div className="section-header">
             <h2>WORK</h2>
-            <p>Selected projects and campaigns</p>
+            <p>Professional photoshoots and campaigns</p>
           </div>
           
-          <div className="work-grid">
-            <div className="work-item">
-              <div className="work-cover">
-                <div className="photo-placeholder">
-                  <span>Summer Editorial</span>
+          <div className="albums-grid">
+            {albums.map((album) => {
+              const coverImage = getPhotoPath(album.folderName, album.images[0]);
+              return (
+                <div 
+                  key={album.id} 
+                  className="album-card" 
+                  onClick={() => navigate(`/projects/${album.id}`)}
+                  style={{ cursor: 'pointer' }}
+                >
+                  <div className="album-cover">
+                    <img src={coverImage} alt={album.title} />
+                    <div className="album-overlay">
+                      <h3>{album.title}</h3>
+                      <p>{album.description}</p>
+                      <span className="photo-count">{album.images.length} photos</span>
+                    </div>
+                  </div>
                 </div>
-              </div>
-              <div className="work-info">
-                <h3>Summer Editorial</h3>
-                <p>Beach and lifestyle photography</p>
-                <span className="work-date">July 2024</span>
-              </div>
-            </div>
-
-            <div className="work-item">
-              <div className="work-cover">
-                <div className="photo-placeholder">
-                  <span>Fashion Week</span>
-                </div>
-              </div>
-              <div className="work-info">
-                <h3>Fashion Week</h3>
-                <p>High fashion runway</p>
-                <span className="work-date">September 2024</span>
-              </div>
-            </div>
-
-            <div className="work-item">
-              <div className="work-cover">
-                <div className="photo-placeholder">
-                  <span>Urban Lifestyle</span>
-                </div>
-              </div>
-              <div className="work-info">
-                <h3>Urban Lifestyle</h3>
-                <p>Street style photography</p>
-                <span className="work-date">October 2024</span>
-              </div>
-            </div>
-
-            <div className="work-item">
-              <div className="work-cover">
-                <div className="photo-placeholder">
-                  <span>Beauty Campaign</span>
-                </div>
-              </div>
-              <div className="work-info">
-                <h3>Beauty Campaign</h3>
-                <p>Commercial beauty shoot</p>
-                <span className="work-date">November 2024</span>
-              </div>
-            </div>
+              );
+            })}
           </div>
         </div>
-      </section>
+        </section>
+      ) : null}
 
       {/* Contact Section */}
-      <section id="contact" className="contact-section">
+      {isExploreClicked ? (
+        <section id="contact" className="contact-section">
         <div className="container">
           <div className="section-header">
             <h2>CONTACT</h2>
-            <p>Coming Soon</p>
+            <p>Get in touch with me</p>
+          </div>
+          
+          <div className="contact-form-container">
+            <form className="contact-form" onSubmit={handleFormSubmit}>
+              <div className="form-group">
+                <label htmlFor="name">Name *</label>
+                <input
+                  type="text"
+                  id="name"
+                  name="name"
+                  value={formData.name}
+                  onChange={handleFormChange}
+                  required
+                />
+              </div>
+
+              <div className="form-group">
+                <label htmlFor="email">Email *</label>
+                <input
+                  type="email"
+                  id="email"
+                  name="email"
+                  value={formData.email}
+                  onChange={handleFormChange}
+                  required
+                />
+              </div>
+
+              <div className="form-group">
+                <label htmlFor="subject">Subject *</label>
+                <input
+                  type="text"
+                  id="subject"
+                  name="subject"
+                  value={formData.subject}
+                  onChange={handleFormChange}
+                  required
+                />
+              </div>
+
+              <div className="form-group">
+                <label htmlFor="message">Message *</label>
+                <textarea
+                  id="message"
+                  name="message"
+                  value={formData.message}
+                  onChange={handleFormChange}
+                  rows={6}
+                  required
+                />
+              </div>
+
+              <button 
+                type="submit" 
+                className="submit-button"
+                disabled={formStatus === 'sending'}
+              >
+                {formStatus === 'sending' ? 'SENDING...' : 'SEND MESSAGE'}
+              </button>
+
+              {formStatus === 'success' && (
+                <p className="form-message success">Message sent successfully!</p>
+              )}
+              {formStatus === 'error' && (
+                <p className="form-message error">Failed to send message. Please try again.</p>
+              )}
+            </form>
           </div>
         </div>
-      </section>
+        </section>
+      ) : null}
     </div>
   );
 };

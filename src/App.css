@@ -72,6 +72,10 @@ body {
 }
 
 .main-content {
+  min-height: 100vh;
+}
+
+.main-content.header-visible {
   min-height: calc(100vh - 80px);
   padding-top: 80px;
 }
