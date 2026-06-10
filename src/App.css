@@ -38,6 +38,7 @@ body {
   display: flex;
   justify-content: center;
   gap: 4rem;
+  align-items: center;
 }
 
 .nav-link {

@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
 import emailjs from '@emailjs/browser';
 // @ts-ignore: allow side-effect CSS import without type declarations
 import './Home.css';
@@ -16,10 +15,9 @@ interface Album {
 }
 
 const Home: React.FC = () => {
-  const navigate = useNavigate();
   const { isExploreClicked, setIsExploreClicked } = useExplore();
   const [albums, setAlbums] = useState<Album[]>([]);
-  const [randomImageIndices, setRandomImageIndices] = useState<number[]>([]);
+  const [randomGalleryImages, setRandomGalleryImages] = useState<string[]>([]);
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -46,17 +44,21 @@ const Home: React.FC = () => {
   }, []);
 
   useEffect(() => {
-    // Generate random image indices when albums are loaded
-    if (albums.length > 0) {
-      const indices = [];
-      // Generate indices for hero image and 4 digital photos
-      for (let i = 0; i < 5; i++) {
-        const randomIndex = Math.floor(Math.random() * albums[i % albums.length].images.length);
-        indices.push(randomIndex);
+    // Generate 10 random images for gallery when explore is clicked
+    if (isExploreClicked && albums.length > 0) {
+      const galleryImages: string[] = [];
+      
+      // Select random images from different albums
+      for (let i = 0; i < 10; i++) {
+        const albumIndex = Math.floor(Math.random() * albums.length);
+        const album = albums[albumIndex];
+        const imageIndex = Math.floor(Math.random() * album.images.length);
+        galleryImages.push(getPhotoPath(album.folderName, album.images[imageIndex]));
       }
-      setRandomImageIndices(indices);
+      
+      setRandomGalleryImages(galleryImages);
     }
-  }, [albums]);
+  }, [isExploreClicked, albums]);
 
   const getPhotoPath = (folderName: string, fileName: string): string => {
     const basePath = process.env.PUBLIC_URL || '/amy-website';
@@ -66,8 +68,8 @@ const Home: React.FC = () => {
   const handleExplore = () => {
     setIsExploreClicked(true);
     setTimeout(() => {
-      document.getElementById('digitals')?.scrollIntoView({ behavior: 'smooth' });
-    }, 0);
+      document.getElementById('gallery')?.scrollIntoView({ behavior: 'smooth' });
+    }, 100);
   };
 
   const handleFormChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -76,13 +78,6 @@ const Home: React.FC = () => {
       ...prev,
       [name]: value
     }));
-  };
-
-  const getRandomImage = (albumIndex: number) => {
-    if (albums.length === 0 || randomImageIndices.length === 0) return '';
-    const album = albums[albumIndex % albums.length];
-    const randomImageIndex = randomImageIndices[albumIndex] || 0;
-    return getPhotoPath(album.folderName, album.images[randomImageIndex]);
   };
 
   const handleFormSubmit = async (e: React.FormEvent) => {
@@ -134,102 +129,25 @@ const Home: React.FC = () => {
         </div>
       </section>
 
-
-
-      {/* Digitals Section */}
-      {isExploreClicked ? (
-        <section id="digitals" className="digitals-section">
-        <div className="container">
-          <div className="section-header">
-            <h2>DIGITALS</h2>
-            <p>Professional digitals and measurements</p>
-          </div>
-          
-          <div className="digitals-content">
-            <div className="measurements-box">
-              <h3>MEASUREMENTS</h3>
-              <div className="measurements">
-                <div className="measurement-item">
-                  <span className="label">Height</span>
-                  <span className="value">158 cm</span>
-                </div>
-                <div className="measurement-item">
-                  <span className="label">Bust</span>
-                  <span className="value">79 cm</span>
-                </div>
-                <div className="measurement-item">
-                  <span className="label">Waist</span>
-                  <span className="value">60 cm</span>
-                </div>
-                <div className="measurement-item">
-                  <span className="label">Hips</span>
-                  <span className="value">103 cm</span>
-                </div>
-                <div className="measurement-item">
-                  <span className="label">Dress Size</span>
-                  <span className="value">XXS</span>
-                </div>
-                <div className="measurement-item">
-                  <span className="label">Shoe Size</span>
-                  <span className="value">US 8 / EU 38</span>
-                </div>
-                <div className="measurement-item">
-                  <span className="label">Hair Color</span>
-                  <span className="value">Brunette</span>
-                </div>
-                <div className="measurement-item">
-                  <span className="label">Eye Color</span>
-                  <span className="value">Brown</span>
+      {/* Only show content sections after explore is clicked */}
+      {isExploreClicked && (
+        <>
+          {/* Random Gallery Section - Vertical Scroll */}
+          {randomGalleryImages.length > 0 ? (
+            <section id="gallery" className="random-gallery-section">
+              <div className="gallery-container">
+                <div className="gallery-vertical">
+                  {randomGalleryImages.map((imagePath, index) => (
+                    <div key={index} className="gallery-item">
+                      <img src={imagePath} alt={`Gallery ${index + 1}`} />
+                    </div>
+                  ))}
                 </div>
               </div>
-            </div>
-            
-            <div className="digitals-photos">
-              {albums.length > 0 && [...Array(4)].map((_, index) => (
-                <div key={index} className="digital-photo-item">
-                  <img src={getRandomImage(index + 1)} alt={`Digital ${index + 1}`} className="digital-image" />
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-        </section>
-      ) : null}
-
-      {/* Work/Projects Section */}
-      {isExploreClicked ? (
-        <section id="work" className="work-section">
-        <div className="container">
-          <div className="section-header">
-            <h2>WORK</h2>
-            <p>Professional photoshoots and campaigns</p>
-          </div>
-          
-          <div className="albums-grid">
-            {albums.map((album) => {
-              const coverImage = getPhotoPath(album.folderName, album.images[0]);
-              return (
-                <div 
-                  key={album.id} 
-                  className="album-card" 
-                  onClick={() => navigate(`/projects/${album.id}`)}
-                  style={{ cursor: 'pointer' }}
-                >
-                  <div className="album-cover">
-                    <img src={coverImage} alt={album.title} />
-                    <div className="album-overlay">
-                      <h3>{album.title}</h3>
-                      <p>{album.description}</p>
-                      <span className="photo-count">{album.images.length} photos</span>
-                    </div>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-        </section>
-      ) : null}
+            </section>
+          ) : null}
+        </>
+      )}
 
       {/* Contact Section */}
       {isExploreClicked ? (
