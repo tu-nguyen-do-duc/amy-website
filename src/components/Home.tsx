@@ -44,16 +44,21 @@ const Home: React.FC = () => {
   }, []);
 
   useEffect(() => {
-    // Generate 10 random images for gallery when explore is clicked
+    // Collect all images from all albums and randomize them
     if (isExploreClicked && albums.length > 0) {
       const galleryImages: string[] = [];
       
-      // Select random images from different albums
-      for (let i = 0; i < 10; i++) {
-        const albumIndex = Math.floor(Math.random() * albums.length);
-        const album = albums[albumIndex];
-        const imageIndex = Math.floor(Math.random() * album.images.length);
-        galleryImages.push(getPhotoPath(album.folderName, album.images[imageIndex]));
+      // Add all images from all albums
+      albums.forEach((album) => {
+        album.images.forEach((image) => {
+          galleryImages.push(getPhotoPath(album.folderName, image));
+        });
+      });
+      
+      // Shuffle the images
+      for (let i = galleryImages.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [galleryImages[i], galleryImages[j]] = [galleryImages[j], galleryImages[i]];
       }
       
       setRandomGalleryImages(galleryImages);

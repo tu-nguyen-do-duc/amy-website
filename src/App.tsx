@@ -12,7 +12,7 @@ function AppContent() {
   const navigate = useNavigate();
   const location = useLocation();
   const isProjectRoute = location.pathname.startsWith('/projects');
-  const { isExploreClicked } = useExplore();
+  const { isExploreClicked, playingVideoId, setPlayingVideoId, videos } = useExplore();
 
   const handleNavClick = (path: string) => {
     if (path === '/#contact') {
@@ -61,6 +61,23 @@ function AppContent() {
             <Route path="/projects/:albumId" element={<Projects />} />
           </Routes>
         </main>
+      )}
+
+      {/* Video Modal - Rendered at App level so it never unmounts */}
+      {playingVideoId !== null && (
+        <div className="video-modal" onClick={() => setPlayingVideoId(null)}>
+          <div className="video-modal-content" onClick={(e) => e.stopPropagation()}>
+            <button className="close-button" onClick={() => setPlayingVideoId(null)}>✕</button>
+            {videos.find(v => v.id === playingVideoId) && (
+              <div className="video-player">
+                <video controls autoPlay width="100%" height="100%" style={{ maxWidth: '100%', maxHeight: '90vh' }}>
+                  <source src={`${process.env.PUBLIC_URL || '/amy-website'}/media/${videos.find(v => v.id === playingVideoId)?.fileName}`} type="video/mp4" />
+                  Your browser does not support the video tag.
+                </video>
+              </div>
+            )}
+          </div>
+        </div>
       )}
     </div>
   );

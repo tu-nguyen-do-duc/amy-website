@@ -48,7 +48,7 @@ const Projects: React.FC = () => {
   };
 
   const closeAlbum = () => {
-    navigate('/projects');
+    navigate('/work');
   };
 
   const openFocusedPhoto = (index: number) => {
@@ -123,7 +123,7 @@ const Projects: React.FC = () => {
         <div className="container">
           <div className="album-header">
             <button className="back-button" onClick={closeAlbum}>
-              ← Back to Projects
+              ← Back to Work
             </button>
             <h1>Projects</h1>
             <h2>{currentAlbum.title}</h2>
