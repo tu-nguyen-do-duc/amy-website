@@ -198,5 +198,14 @@
         "DSCF5343.JPG"
       ]
     }
+  ],
+  "videos": [
+    {
+      "id": 5,
+      "title": "Resort",
+      "description": "Resort video",
+      "fileName": "Resort.mp4",
+      "thumbnail": "Resort-thumbnail.jpg"
+    }
   ]
 }

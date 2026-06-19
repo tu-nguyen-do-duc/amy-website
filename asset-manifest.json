@@ -1,15 +1,15 @@
 {
   "files": {
-    "main.css": "/amy-website/static/css/main.2970699f.css",
-    "main.js": "/amy-website/static/js/main.f0e7c3db.js",
+    "main.css": "/amy-website/static/css/main.fd2fe583.css",
+    "main.js": "/amy-website/static/js/main.7ba2f7ec.js",
     "static/js/453.d39bcc1b.chunk.js": "/amy-website/static/js/453.d39bcc1b.chunk.js",
     "index.html": "/amy-website/index.html",
-    "main.2970699f.css.map": "/amy-website/static/css/main.2970699f.css.map",
-    "main.f0e7c3db.js.map": "/amy-website/static/js/main.f0e7c3db.js.map",
+    "main.fd2fe583.css.map": "/amy-website/static/css/main.fd2fe583.css.map",
+    "main.7ba2f7ec.js.map": "/amy-website/static/js/main.7ba2f7ec.js.map",
     "453.d39bcc1b.chunk.js.map": "/amy-website/static/js/453.d39bcc1b.chunk.js.map"
   },
   "entrypoints": [
-    "static/css/main.2970699f.css",
-    "static/js/main.f0e7c3db.js"
+    "static/css/main.fd2fe583.css",
+    "static/js/main.7ba2f7ec.js"
   ]
 }
